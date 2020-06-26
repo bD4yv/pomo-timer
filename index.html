@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>ぽもどーろ！</title>
+  <style>
+      body{
+          background-color:bisque;
+      }
+      .container{
+          margin-top:100px;
+          text-align:center;
+      }
+      #timerLable{
+          margin: 100px 0px;
+          color:white
+      }
+      .myButton{
+          width:180px;
+          height:50px;
+          border:none;
+          border-radius:6px;
+          background-color:white;
+          font-size:16px;
+      }
+      .title,.myButton{
+          font-family:'Berkshire Swash',cursive;
+      }
+  </style>
+</head>
+<body>
+  <div class = "container">
+    <h1 class="title">ぽもどーろ！</h1>
+    <h1 id="timerLabel">00:00</h1>
+    <input type="button" class="myButton"
+           onclick="start_run()"
+           value = "START"
+           id="startRunBtn">
+    <input type="button" class="myButton"
+           onclick="start_rest()"
+           value = "REST"
+           id="startRestBtn">
+    <input type="button" class="myButton"
+           onclick="break_pomo()"
+           value = "BREAK">
+    <input type="button" class="myButton"
+            onclick="autoManual()"
+            value = "MANUAL"
+            id = "autoManualBtn">
+    <p><label for="name">run_time(minute)</label>
+    <input type="tel" id="run_time"/></p>
+    <p><label for="name">rest_time(minute)</label>
+    <input type="tel" id="rest_time"/></p>
+    <p><label for="name">long_rest_time(minute)</label>
+    <input type="tel" id="long_rest_time"/></p>
+    <p><h2>ポモカウント</h2>
+    <h2 id="pomo_count">0</h2></p>
+
+  </div>
+  <script>
+      var alarm = new Audio('alarm.mp3');
+      var status = 0;
+      var time = 0;
+      var startRunBtn = document.getElementById("startRunBtn");
+      var startRestBtn = document.getElementById("startRestBtn");
+      var timerLabel = document.getElementById("timerLabel");
+      var pomo_count = document.getElementById("pomo_count");
+      var autoManualBtn = document.getElementById("autoManualBtn");
+      var isStopped = 0;
+      var pomo_counter = 0;
+      var now_step;
+      var isAuto = 0
+      function autoManual(){
+          console.log(autoManualBtn.value)
+          if(autoManualBtn.value == "MANUAL"){
+              isAuto = 1;
+              autoManualBtn.value = "AUTO";
+          }else if(autoManualBtn.value == "AUTO"){
+              isAuto = 0;
+              autoManualBtn.value = "MANUAL";
+          }
+      }
+      function start_run(){
+        status = 1;
+        now_step = "run"
+        startRunBtn.disabled = true;
+        set_timer();
+        timer();
+      }
+      function start_rest(){
+          status = 1;
+          now_step = "rest"
+          startRestBtn.disabled = true;
+          set_timer();
+          timer();
+      }
+      function set_timer(){
+        if(isStopped == 0){
+            if(now_step == "run"){
+                input_min = document.getElementById("run_time");
+            }else if(now_step =="rest"){
+                input_min = document.getElementById("rest_time");
+            }
+            set_time = Number(input_min.value * 60*1000);
+            var now = new Date();
+            start_time = now.getTime()
+        }
+      }
+      function break_pomo(){
+        status = 0;
+        isStopped = 0;
+        timerLabel.innerHTML =Number(input_min.value) +":00:00";
+        if(now_step == "run"){
+        startRunBtn.disabled = false;
+        }else if(now_step == "rest"){
+        startRestBtn.disabled = false;
+        }
+      }
+      function timer(){
+          if(status == 1){
+            setTimeout(timer_output,100);
+            if(isFinished()){
+                alarm.play();
+                if(now_step == "run"){
+                    pomo_counter += 1
+                    pomo_count.innerHTML = pomo_counter;
+                    startRunBtn.disabled = false;
+                    break_pomo();
+                    if(isAuto == 1){
+                        start_rest();
+                    }
+                }else{
+                    break_pomo()
+                    if(isAuto == 1){
+                        start_run();
+                    }
+
+                }
+            }
+          }
+      }
+      function isFinished(){
+          var now = new Date();
+          timer_sec = (set_time-(now.getTime()-start_time))/1000;
+          if(timer_sec < 0){
+              return true;
+          }else{
+              return false;
+          }
+      }
+      function timer_output(){
+          var now = new Date();
+          now_time = now.getTime();
+          timer_str = count_format((set_time-(now_time-start_time))/1000);
+          timerLabel.innerHTML = timer_str;
+          timer()
+      }
+      function count_format(sec){
+          var time_sec = sec.toFixed(0);
+          var time_minute = Math.floor(time_sec/60);
+          time_sec = time_sec % 60;
+          if(time_sec < 10) time_sec = "0"+time_sec;
+          if(time_minute<10)time_minute = "0"+time_minute;
+          return time_minute+ ":" +time_sec;
+      }
+
+  </script>
+</body>
+</html>
